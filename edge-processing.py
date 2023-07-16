@@ -26,11 +26,9 @@ def rotate_clockwise(image, degrees):
     
 # Read the original image
 img = cv2.imread('data/data(42).jpg')
-#img2 = cv2.imread('data/data(8).jpg')
-#show_image(img)
 
 #applying guassian blur
-img_blur = cv2.GaussianBlur(img,(5, 5),cv2.BORDER_DEFAULT)
+img_blur = cv2.GaussianBlur(img,(9, 9),cv2.BORDER_DEFAULT)
 #show_image(img_blur)
 
 #applying Canny Filtering
@@ -40,18 +38,24 @@ show_image(edges)
 # Find contours
 contours, hierarchy  = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
+
+
 # Find longest contour
 perimeter = []
 for i in range(0,len(contours)):
     perimeter.append(cv2.arcLength(contours[i], False))
-    
-print(max(perimeter))
-idx_max_perimeter = perimeter.index(max(perimeter))
-print(idx_max_perimeter)
 
+sorted_indices = np.argsort(perimeter)[::-1]
+
+largest_contours = []
+number_of_contours = 10
+for i in range(0,number_of_contours):
+    largest_contours.append(contours[sorted_indices[i]])
+
+    
 #Show longest contour
 img_blur2 = cv2.GaussianBlur(img,(41, 41),cv2.BORDER_DEFAULT) # High blur to highlight the contour
-img_res = cv2.drawContours(img_blur2, contours, idx_max_perimeter, (0,0,0), 2) #(0,255,75)
+img_res = cv2.drawContours(img_blur2, largest_contours, -1, (0,0,0), 2) #(0,255,75)
 show_image(img_res)
 
 # RGB to B/W conversion
@@ -70,7 +74,7 @@ tested_angles_h = np.linspace(- np.pi /2, np.pi / 2, 360, endpoint=False)
 h_h, theta_h, d_h = hough_line(edges2, theta=tested_angles_h)
 
 # Extract prominent lines from the Hough accumulator using a threshold
-_, angles, distances = hough_line_peaks(h_h, theta_h, d_h, threshold=200)
+_, angles, distances = hough_line_peaks(h_h, theta_h, d_h, threshold=100)
 print(np.rad2deg(angles))
 
 # Perform K-means clustering to find the main angles
